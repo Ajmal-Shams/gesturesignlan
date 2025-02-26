@@ -1,6 +1,9 @@
 from django.urls import path
-from .views import index
+from .views import home,detection,gesture
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', home, name='home'),
+    path('detection/', detection, name='detection'),
+    path('gesture/', gesture, name='gesture'),
+
 ]

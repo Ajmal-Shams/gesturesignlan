@@ -1,0 +1,43 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ASL & Gesture Detection</title>
+    
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body class="dark-theme">
+
+    <nav>
+        <div class="logo">ASL Detector</div>
+        <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
+
+    <div class="detection-container">
+        <h1>Live ASL & Gesture Detection</h1>
+
+        <div class="video-container">
+            <video id="video" autoplay></video>
+            <canvas id="canvas" style="display:none"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="toggle-gesture">Toggle Gesture Detection</button>
+        </div>
+
+        <div class="output-container">
+            <p>Detected Letter: <span id="current-sign" class="highlight">Waiting...</span></p>
+            <p>Gesture: <span id="gesture" class="highlight">None</span></p>
+            <p>Current Word: <span id="current-word" class="highlight"></span></p>
+            <p>Sentence: <span id="sentence" class="highlight"></span></p>
+        </div>
+    </div>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Recognition</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body class="dark-theme">
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo">Gesture Detector</div>
+        <ul>
+            
+            <li><a href="{% url 'detection' %}" class="nav-link">Start Detection</a></li>
+            <li><a href="#" class="nav-link active">Gesture Recognition</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="title">Real-Time Gesture Recognition</h1>
+        
+        <div class="video-wrapper">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+        </div>
+        
+        <div class="gesture-box">
+            <h2>Detected Gesture: <span id="gesture">None</span></h2>
+        </div>
+    </div>
+
+    <script src="{% static 'js/gesture.js' %}"></script>
+</body>
+</html>

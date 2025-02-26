@@ -1,0 +1,110 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ASL Detection - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Lottie Animation -->
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body class="dark-theme">
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <dotlottie-player 
+            src="https://lottie.host/e2aa8b48-ee5d-44be-b5c2-2fead41259aa/BnbmDuLMXC.lottie"
+            background="transparent"
+            speed="1"
+            style="width: 250px; height: 250px"
+            loop
+            autoplay>
+        </dotlottie-player>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="logo">ASL Detector</div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active">Home</a></li>
+                <li><a href="{% url 'detection' %}" class="nav-link">Start Detection</a></li>
+                <li><a href="{% url 'gesture' %}" class="nav-link">Gesture</a></li>
+                <li><a href="#" class="nav-link">Contact</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Real-time ASL & Gesture Detection</h1>
+                <p>Experience AI-powered sign language recognition and gesture detection.</p>
+                <a href="{% url 'detection' %}" class="btn btn-primary">Start Detection</a>
+            </div>
+            <div class="hero-image">
+                <img src="{% static 'images/gesture.png' %}" alt="Gesture Illustration">
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about">
+            <h2>About ASL & Gesture Detection</h2>
+            <p>Our AI-powered system recognizes sign language and gestures in real-time, bridging the gap between the hearing and non-hearing communities.</p>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <h2>Why Choose Our App?</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <img src="{% static 'images/real-time.png' %}" alt="Real-time">
+                    <h3>Real-time Detection</h3>
+                    <p>Instantly detect ASL signs and gestures with high accuracy.</p>
+                </div>
+                <div class="feature-card">
+                    <img src="{% static 'images/user-friendly.png' %}" alt="User-Friendly">
+                    <h3>User-Friendly</h3>
+                    <p>Designed for everyone, with a sleek and easy-to-use interface.</p>
+                </div>
+                <div class="feature-card">
+                    <img src="{% static 'images/ai-powered.png' %}" alt="AI-Powered">
+                    <h3>AI-Powered</h3>
+                    <p>Advanced deep learning models provide highly accurate recognition.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="testimonials">
+            <h2>What Users Say</h2>
+            <div class="testimonial-card">
+                <p>"This app has been a game-changer for my deaf students!"</p>
+                <h4>- Sarah Johnson</h4>
+            </div>
+            <div class="testimonial-card">
+                <p>"The accuracy of the ASL detection is incredible!"</p>
+                <h4>- David Lee</h4>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <h2>Ready to Try?</h2>
+            <a href="{% url 'detection' %}" class="btn btn-primary">Start Detection Now</a>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 ASL Detector. All Rights Reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{% static 'js/animation.js' %}"></script>
+</body>
+</html>
