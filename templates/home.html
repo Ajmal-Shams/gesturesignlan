@@ -1,6 +1,5 @@
 {% load static %}
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +11,64 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <style>
+        /* Hover Animation for Gesture Image */
+        .hero-image img {
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .hero-image img:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Hover Animation for Feature Images */
+        .feature-card img {
+            transition: transform 0.4s ease-in-out, box-shadow 0.4s;
+        }
+
+        .feature-card img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(0, 200, 255, 0.3);
+        }
+
+        /* ASL Learning Section */
+        .learn-asl {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 40px auto;
+            max-width: 800px;
+            box-shadow: 0 5px 15px rgba(0, 200, 255, 0.3);
+        }
+
+        .learn-asl h2 {
+            font-size: 28px;
+            color: #00c8ff;
+        }
+
+        .learn-asl p {
+            font-size: 18px;
+            margin: 10px 0 20px;
+        }
+
+        .btn-learn {
+            display: inline-block;
+            padding: 12px 25px;
+            font-size: 18px;
+            color: white;
+            background: #0077ff;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-learn:hover {
+            background: #00c8ff;
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body class="dark-theme">
 
@@ -36,7 +93,6 @@
                 <li><a href="#" class="nav-link active">Home</a></li>
                 <li><a href="{% url 'detection' %}" class="nav-link">Start Detection</a></li>
                 <li><a href="{% url 'gesture' %}" class="nav-link">Gesture</a></li>
-                <li><a href="#" class="nav-link">Contact</a></li>
             </ul>
         </nav>
 
@@ -80,17 +136,11 @@
             </div>
         </section>
 
-        <!-- Testimonials -->
-        <section class="testimonials">
-            <h2>What Users Say</h2>
-            <div class="testimonial-card">
-                <p>"This app has been a game-changer for my deaf students!"</p>
-                <h4>- Sarah Johnson</h4>
-            </div>
-            <div class="testimonial-card">
-                <p>"The accuracy of the ASL detection is incredible!"</p>
-                <h4>- David Lee</h4>
-            </div>
+        <!-- Learn ASL Section -->
+        <section class="learn-asl">
+            <h2>Want to Learn ASL?</h2>
+            <p>Improve your communication skills by learning American Sign Language today.</p>
+            <a href="{% url 'learn_asl' %}" class="btn-learn">Start Learning</a>
         </section>
 
         <!-- CTA Section -->
@@ -99,10 +149,6 @@
             <a href="{% url 'detection' %}" class="btn btn-primary">Start Detection Now</a>
         </section>
 
-        <!-- Footer -->
-        <footer>
-            <p>© 2025 ASL Detector. All Rights Reserved.</p>
-        </footer>
     </div>
 
     <script src="{% static 'js/animation.js' %}"></script>

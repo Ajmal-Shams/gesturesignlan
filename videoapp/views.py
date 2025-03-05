@@ -8,3 +8,6 @@ def detection(request):
 
 def gesture(request):
     return render(request, "gesture.html")
+
+def learn_asl(request):
+    return render(request, "learn_asl.html")

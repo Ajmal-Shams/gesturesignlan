@@ -11,11 +11,11 @@ from collections import deque
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 # ✅ Set correct model paths
-asl_model_path = os.path.abspath("G:/Django Projects/Personal/lansign/video_stream/models/slr_model.tflite")
+asl_model_path = os.path.abspath("G:/Django Projects/Personal/signlan-1/signlan/models/slr_model.tflite")
 
 
 # ✅ Get absolute model path
-gesture_model_path = os.path.abspath("G:/Django Projects/Personal/signlan-1/videoapp/gesture_recognizer.task")
+gesture_model_path = os.path.abspath("G:/Django Projects/Personal/signlan-1/signlan/videoapp/gesture_recognizer.task")
 
 # ✅ Debugging: Check if MediaPipe is getting the correct path
 print(f"🔹 Using Gesture Model Path: {gesture_model_path}")
