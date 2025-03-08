@@ -1,12 +1,13 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const currentSign = document.getElementById('current-sign');
-const currentWordText = document.getElementById('current-word');
-const sentenceText = document.getElementById('sentence');
+
 
 let wsUrl = localStorage.getItem("wsUrl") || "ws://127.0.0.1:8000/ws/video/";
 let ws;
+let lastSpokenText = "";
 
+// Function to connect WebSocket
 function connectWebSocket() {
     ws = new WebSocket(wsUrl);
 
@@ -15,12 +16,18 @@ function connectWebSocket() {
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         const detectedSign = data.prediction || "No Sign";
-        const currentWord = data.current_word || "";
-        const sentence = data.sentence || "";
+       
 
+        console.log("Received Data:", data); // Debugging log
         currentSign.innerText = detectedSign;
-        currentWordText.innerText = currentWord;
-        sentenceText.innerText = sentence;
+       
+
+        // Speak only if the detected sign is different and not "No Sign"
+        if (detectedSign !== lastSpokenText && detectedSign !== "No Sign") {
+            console.log("Speaking:", detectedSign);
+            lastSpokenText = detectedSign;
+            speakText(detectedSign);
+        }
     };
 
     ws.onclose = () => {
@@ -29,6 +36,21 @@ function connectWebSocket() {
     };
 }
 
+// Function to speak detected text
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        console.log("Triggering Speech:", text);
+        speechSynthesis.cancel();
+        let utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 1;
+        speechSynthesis.speak(utterance);
+    } else {
+        console.warn("Speech synthesis not supported in this browser.");
+    }
+}
+
+// Connect WebSocket
 connectWebSocket();
 
 // Access webcam
@@ -38,6 +60,8 @@ navigator.mediaDevices.getUserMedia({ video: true })
 
 // Capture frames & send to WebSocket
 setInterval(() => {
+    if (!video.videoWidth || !video.videoHeight) return;
+
     const ctx = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;

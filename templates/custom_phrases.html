@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Custom Phrases</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0d1117;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding-top: 80px;
+        }
+
+        /* Navbar */
+        nav {
+            background: #161b22;
+            padding: 15px 40px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        nav a {
+            color: white;
+            margin-right: 20px;
+            font-size: 18px;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        nav a:hover {
+            background: #00c8ff;
+            color: black;
+            transform: scale(1.1);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 600px;
+            margin: 80px auto;
+            background: #161b22;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #00c8ff;
+            font-size: 1.8rem;
+        }
+
+        /* Form & Search */
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 5px;
+            border: 2px solid #00c8ff;
+            background: #0d1117;
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            width: 50%;
+            padding: 12px;
+            background: #00c8ff;
+            color: black;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            background: #0095cc;
+            transform: scale(1.05);
+        }
+
+        /* Saved Phrases Section */
+        .phrase-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #20262e;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .phrase-section h3 {
+            color: #00c8ff;
+            font-size: 1.5rem;
+        }
+
+        .phrase-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        .phrase-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2f36;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .speak-btn {
+            padding: 8px 15px;
+            background: #00c8ff;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .speak-btn:hover {
+            background: #0095cc;
+            transform: scale(1.05);
+        }
+
+        .delete-btn {
+            color: red;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            padding-left: 10px;
+        }
+
+        .no-phrases {
+            color: gray;
+            margin-top: 10px;
+        }
+
+        /* TTS Section (Separate from Saved Phrases) */
+        .tts-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #20262e;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .tts-section h3 {
+            color: #00c8ff;
+            font-size: 1.5rem;
+        }
+
+        .tts-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 5px;
+            border: 2px solid #00c8ff;
+            background: #0d1117;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .navhead{
+            color: #0095cc;
+            margin-right: 30px;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav>
+        <h1 class="navhead">Custom Phrase</h1>
+        <a href="/">Home</a>
+        <a href="{% url 'quick_phrases' %}">Quick Phrases</a>
+    </nav>
+
+    <!-- Main Container -->
+    <section class="container">
+        <h2>Custom Phrases</h2>
+
+        <!-- Add Phrase Form -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="phrase" placeholder="Enter a phrase" required class="input-field">
+            <button type="submit" class="btn">Save Phrase</button>
+        </form>
+
+        <!-- Search Phrases -->
+        <input type="text" id="search" class="input-field" placeholder="Search phrases...">
+
+        <!-- Saved Phrases Section -->
+        <div class="phrase-section">
+            <h3>Saved Phrases</h3>
+            <ul id="phrase-list" class="phrase-list">
+                {% for phrase in phrases %}
+                    <li class="phrase-item">
+                        <span>{{ phrase.text }}</span>
+                        <div>
+                            <button class="speak-btn" onclick="speak('{{ phrase.text }}')">🔊 Speak</button>
+                            <a href="{% url 'delete_phrase' phrase.id %}" class="delete-btn">❌</a>
+                        </div>
+                    </li>
+                {% empty %}
+                    <li class="no-phrases">No phrases yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+      
+    </section>
+
+    <script>
+        // Text-to-Speech Function
+        function speak(text) {
+            let speech = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(speech);
+        }
+
+        // Custom TTS Input
+        function speakCustom() {
+            let text = document.getElementById("ttsInput").value;
+            if (text.trim() !== "") {
+                speak(text);
+            }
+        }
+    </script>
+
+</body>
+</html>

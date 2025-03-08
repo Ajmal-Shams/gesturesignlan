@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Text-to-Speech</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding-top: 80px;
+            overflow-x: hidden;
+            text-align: center;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #161b22;
+            padding: 15px 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .navbar h1 {
+            color: #00c8ff;
+            font-size: 24px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .tts-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #161b22;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tts-container h2 {
+            font-size: 2.5rem;
+            color: #00c8ff;
+        }
+
+        .tts-textarea {
+            width: 100%;
+            height: 120px;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #00c8ff;
+            background: #0d1117;
+            color: white;
+            resize: none;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #00c8ff;
+        }
+
+        .control-group label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .tts-button {
+            background: #00c8ff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: black;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.2s ease-in-out, background 0.3s;
+        }
+
+        .tts-button:hover {
+            background: #0080c8;
+            transform: scale(1.05);
+        }
+
+        .tts-button:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+
+        select, input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 2px solid #00c8ff;
+            background: #0d1117;
+            color: white;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1>Text-to-Speech</h1>
+    </div>
+
+    <section class="tts-container">
+        <h2>Text-to-Speech</h2>
+        <textarea class="tts-textarea" placeholder="Type something to speak..."></textarea>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="voiceSelect">Voice</label>
+                <select id="voiceSelect"></select>
+            </div>
+            <div class="control-group">
+                <label for="rate">Rate</label>
+                <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
+            </div>
+            <div class="control-group">
+                <label for="pitch">Pitch</label>
+                <input type="range" id="pitch" min="0" max="2" value="1" step="0.1">
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="tts-button" onclick="speakText()">Speak</button>
+            <button class="tts-button" onclick="stopSpeech()">Stop</button>
+        </div>
+    </section>
+
+    <script>
+        let synth = window.speechSynthesis;
+        let voiceSelect = document.getElementById("voiceSelect");
+        let rate = document.getElementById("rate");
+        let pitch = document.getElementById("pitch");
+        let speech;
+
+        function loadVoices() {
+            let voices = synth.getVoices();
+            voiceSelect.innerHTML = "";
+            voices.forEach((voice, index) => {
+                let option = document.createElement("option");
+                option.value = index;
+                option.textContent = voice.name + " (" + voice.lang + ")";
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        function speakText() {
+            let text = document.querySelector(".tts-textarea").value;
+            if (text.trim() === "") return;
+
+            speech = new SpeechSynthesisUtterance(text);
+            let voices = synth.getVoices();
+            speech.voice = voices[voiceSelect.value] || voices[0];
+            speech.rate = rate.value;
+            speech.pitch = pitch.value;
+            synth.speak(speech);
+        }
+
+        function stopSpeech() {
+            synth.cancel();
+        }
+
+        // Load voices when they change
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+    </script>
+
+</body>
+</html>

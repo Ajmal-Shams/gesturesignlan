@@ -93,6 +93,10 @@
                 <li><a href="#" class="nav-link active">Home</a></li>
                 <li><a href="{% url 'detection' %}" class="nav-link">Start Detection</a></li>
                 <li><a href="{% url 'gesture' %}" class="nav-link">Gesture</a></li>
+                <li><a href="{% url 'speechtotext' %}" class="nav-link">Text to Speech</a></li>
+                <li><a href="{% url 'quiz' %}" class="nav-link">Quiz</a></li>
+                <li><a href="{% url 'quick_phrases' %}" class="nav-link">Quick Phrases</a></li>
+                <li><a href="{% url 'custom_phrases' %}" class="nav-link">Custom Phrases</a></li>
             </ul>
         </nav>
 
@@ -101,7 +105,8 @@
             <div class="hero-text">
                 <h1>Real-time ASL & Gesture Detection</h1>
                 <p>Experience AI-powered sign language recognition and gesture detection.</p>
-                <a href="{% url 'detection' %}" class="btn btn-primary">Start Detection</a>
+                <a href="{% url 'detection' %}" class="btn btn-primary">ASL Detection</a>
+                <a href="{% url 'gesture' %}" class="btn btn-primary">Gesture Detection</a>
             </div>
             <div class="hero-image">
                 <img src="{% static 'images/gesture.png' %}" alt="Gesture Illustration">

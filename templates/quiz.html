@@ -1,0 +1,219 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ASL Quiz - American Sign Language</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #0d1117;
+        color: #fff;
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+        padding-top: 80px;
+        overflow-x: hidden;
+        text-align: center;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 15px 40px;
+        background: #161b22;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .navbar .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #00c8ff;
+        margin-right: 20px;
+      }
+      .navbar ul {
+        list-style: none;
+        display: flex;
+        gap: 20px;
+        padding: 0;
+      }
+      .navbar ul li {
+        display: inline;
+      }
+      .navbar ul li a {
+        text-decoration: none;
+        color: #fff;
+        font-size: 18px;
+        padding: 10px 15px;
+        border-radius: 5px;
+        transition: background 0.3s, transform 0.2s;
+      }
+      .navbar ul li a:hover {
+        background: #00c8ff;
+        color: #000;
+        transform: scale(1.1);
+      }
+
+      .quiz-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background: #161b22;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+      .quiz-container h2 {
+        font-size: 2rem;
+        color: #00c8ff;
+      }
+      .quiz-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 8px;
+        background: #1f2937;
+        padding: 10px;
+        margin: 20px 0;
+      }
+      .choices {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .choice {
+        background: #00c8ff;
+        color: black;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.2s;
+      }
+      .choice:hover {
+        background: #0095cc;
+        transform: scale(1.1);
+      }
+      .result-text {
+        font-size: 20px;
+        margin-top: 20px;
+        font-weight: bold;
+      }
+      .score {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 15px;
+        color: #00c8ff;
+      }
+      .next-question {
+        background: #00c8ff;
+        color: black;
+        font-size: 18px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+        display: none;
+      }
+      .next-question:hover {
+        background: #0095cc;
+      }
+
+      /* Start Quiz Modal */
+      .start-quiz {
+        background: #161b22;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 400px;
+        margin: 100px auto;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+      .start-quiz input {
+        width: 60px;
+        padding: 10px;
+        font-size: 16px;
+        text-align: center;
+        border: 2px solid #00c8ff;
+        background: #0d1117;
+        color: white;
+        border-radius: 5px;
+        margin: 10px;
+      }
+      .start-quiz button {
+        background: #00c8ff;
+        color: black;
+        font-size: 18px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      @keyframes flash {
+        0% {
+          color: #fff;
+        }
+        50% {
+          color: red;
+        }
+        100% {
+          color: #fff;
+        }
+      }
+      @keyframes pulse {
+        from {
+          transform: scale(1);
+        }
+        to {
+          transform: scale(1.1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="{% url 'home' %}"> <div class="logo">ASL Learning</div></a>
+      <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'quiz' %}">ASL Quiz</a></li>
+      </ul>
+    </nav>
+
+    <!-- Quiz Start Modal -->
+    <div class="start-quiz" id="start-quiz">
+      <h2>Start ASL Quiz</h2>
+      <p>How many questions do you want?</p>
+      <input type="number" id="question-count" min="5" max="36" value="5" />
+      <button onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Content -->
+    <div class="quiz-container" id="quiz-container" style="display: none">
+      <h2>Guess the ASL Sign</h2>
+      <img id="question-image" class="quiz-image" src="" alt="ASL Sign" />
+      <div id="choices" class="choices"></div>
+      <p id="result-text" class="result-text"></p>
+      <button id="next-question" class="next-question">Next Question</button>
+      <p id="score" class="score">Score: 0</p>
+    </div>
+
+       <div id="countdown-overlay"></div>
+
+    <script src="{% static 'js/quiz.js' %}"></script>
+  </body>
+</html>
