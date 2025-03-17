@@ -50,6 +50,8 @@ nav .logo {
     background: linear-gradient(90deg, #00c8ff, #0077ff);
     -webkit-background-clip: text;
     color: transparent;
+    
+
 }
 
 nav .logo:hover {

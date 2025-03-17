@@ -13,9 +13,9 @@
 
     <!-- Navigation Bar -->
     <nav>
-        <div class="logo">Gesture Detector</div>
+        <a href="{% url 'home' %}" style="text-decoration: none;"><div class="logo">Gesture Detector</div></a>
         <ul>
-            
+            <li><a href="{% url 'home' %}" class="nav-link">Home</a></li>
             <li><a href="{% url 'detection' %}" class="nav-link">Start Detection</a></li>
             <li><a href="#" class="nav-link active">Gesture Recognition</a></li>
         </ul>
