@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Text-to-Speech</title>
+    <title>Speech-to-Text & Text-to-Speech</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
     <style>
         body {
             background-color: #0d1117;
@@ -16,13 +15,12 @@
             text-align: center;
         }
 
-        /* Navbar Styling */
         .navbar {
             position: fixed;
             top: 0;
             width: 100%;
             background: #161b22;
-            padding: 15px 20px;
+            padding: 15px 0;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
             display: flex;
             justify-content: center;
@@ -30,11 +28,12 @@
             z-index: 1000;
         }
 
-        .navbar h1 {
+        .nav-links a {
+            text-decoration: none;
             color: #00c8ff;
-            font-size: 24px;
-            margin: 0;
             font-weight: bold;
+            font-size: 20px;
+            transition: color 0.3s;
         }
 
         .tts-container {
@@ -46,22 +45,32 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .tts-container h2 {
-            font-size: 2.5rem;
-            color: #00c8ff;
-        }
-
         .tts-textarea {
             width: 100%;
-            height: 120px;
+            height: 200px;
             font-size: 18px;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             border: 2px solid #00c8ff;
             background: #0d1117;
             color: white;
-            resize: none;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+
+        .file-upload-container {
+            border: 2px dashed #00c8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #00c8ff;
         }
 
         .controls {
@@ -70,18 +79,6 @@
             gap: 15px;
             margin-top: 15px;
             flex-wrap: wrap;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #00c8ff;
-        }
-
-        .control-group label {
-            font-size: 14px;
-            margin-bottom: 5px;
         }
 
         .tts-button {
@@ -93,99 +90,145 @@
             color: black;
             font-size: 18px;
             font-weight: bold;
-            transition: transform 0.2s ease-in-out, background 0.3s;
         }
 
-        .tts-button:hover {
-            background: #0080c8;
-            transform: scale(1.05);
+        .slider-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
         }
 
-        .tts-button:disabled {
-            background: gray;
-            cursor: not-allowed;
-        }
-
-        select, input {
-            padding: 8px;
-            border-radius: 5px;
-            border: 2px solid #00c8ff;
-            background: #0d1117;
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background: red;
             color: white;
-            font-size: 16px;
+            text-align: center;
+            border-radius: 5px;
+            padding: 10px;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .show-toast {
+            visibility: visible;
+            animation: fadeInOut 3s;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Navbar -->
     <div class="navbar">
-        <h1>Text-to-Speech</h1>
+        <div class="nav-links">
+            <a href="/">🏠 Home</a>
+        </div>
     </div>
 
     <section class="tts-container">
-        <h2>Text-to-Speech</h2>
-        <textarea class="tts-textarea" placeholder="Type something to speak..."></textarea>
+        <h2>Upload File or Type Text</h2>
+        <textarea class="tts-textarea" placeholder="Type text or upload a file..."></textarea>
         
-        <div class="controls">
-            <div class="control-group">
-                <label for="voiceSelect">Voice</label>
+        <!-- File Upload Section -->
+        <div class="file-upload-container" onclick="document.getElementById('fileInput').click()">
+            <p>📂 Click or Drag & Drop to upload a file (JPG, PNG, PDF, DOCX)</p>
+            <input type="file" id="fileInput" class="hidden-file-input" accept=".jpg,.jpeg,.png,.pdf,.docx" onchange="uploadFile(this.files)">
+            <div class="file-name" id="fileName"></div>
+        </div>
+
+        <div class="slider-container">
+            <label>Rate: <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1"></label>
+            <label>Pitch: <input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1"></label>
+            <label>Voice: 
                 <select id="voiceSelect"></select>
-            </div>
-            <div class="control-group">
-                <label for="rate">Rate</label>
-                <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
-            </div>
-            <div class="control-group">
-                <label for="pitch">Pitch</label>
-                <input type="range" id="pitch" min="0" max="2" value="1" step="0.1">
-            </div>
+            </label>
         </div>
 
         <div class="controls">
-            <button class="tts-button" onclick="speakText()">Speak</button>
-            <button class="tts-button" onclick="stopSpeech()">Stop</button>
+            <button class="tts-button" onclick="speakText()">🔊 Speak</button>
+            <button class="tts-button" onclick="stopSpeech()">🛑 Stop</button>
         </div>
     </section>
 
-    <script>
-        let synth = window.speechSynthesis;
-        let voiceSelect = document.getElementById("voiceSelect");
-        let rate = document.getElementById("rate");
-        let pitch = document.getElementById("pitch");
-        let speech;
+    <div class="toast" id="toast"></div>
 
-        function loadVoices() {
-            let voices = synth.getVoices();
+    <script>
+        function populateVoices() {
+            let voices = speechSynthesis.getVoices();
+            let voiceSelect = document.getElementById("voiceSelect");
+
             voiceSelect.innerHTML = "";
             voices.forEach((voice, index) => {
                 let option = document.createElement("option");
                 option.value = index;
-                option.textContent = voice.name + " (" + voice.lang + ")";
+                option.textContent = `${voice.name} (${voice.lang})`;
                 voiceSelect.appendChild(option);
             });
+        }
+
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoices;
         }
 
         function speakText() {
             let text = document.querySelector(".tts-textarea").value;
             if (text.trim() === "") return;
 
-            speech = new SpeechSynthesisUtterance(text);
-            let voices = synth.getVoices();
-            speech.voice = voices[voiceSelect.value] || voices[0];
-            speech.rate = rate.value;
-            speech.pitch = pitch.value;
-            synth.speak(speech);
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.rate = document.getElementById("rate").value;
+            speech.pitch = document.getElementById("pitch").value;
+
+            let voices = speechSynthesis.getVoices();
+            let selectedVoice = document.getElementById("voiceSelect").value;
+            if (voices[selectedVoice]) {
+                speech.voice = voices[selectedVoice];
+            }
+
+            window.speechSynthesis.speak(speech);
         }
 
         function stopSpeech() {
-            synth.cancel();
+            window.speechSynthesis.cancel();
         }
 
-        // Load voices when they change
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
-    </script>
+        function uploadFile(files) {
+            let file = files[0];
+            if (!file) return;
+            document.getElementById("fileName").textContent = "Selected File: " + file.name;
 
+            let formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/upload/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.text) {
+                    document.querySelector(".tts-textarea").value = data.text;
+                }
+            })
+            .catch(() => showToast("Error processing file"));
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show-toast");
+            setTimeout(() => toast.classList.remove("show-toast"), 3000);
+        }
+
+        populateVoices(); // Ensure voices are loaded initially
+    </script>
 </body>
 </html>
+    
