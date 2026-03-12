@@ -19,7 +19,7 @@ media/
 # Big Data & Models (Specific to our project)
 hagrid_data/
 *.zip
-*.tflite
+
 exported_model/
 train_accuracy_report.txt
 
