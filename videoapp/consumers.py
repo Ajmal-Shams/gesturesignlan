@@ -11,37 +11,36 @@ from collections import deque
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 # ✅ Set correct model paths
-asl_model_path = os.path.abspath("G:/Django Projects/Personal/signlan-1/signlan/models/slr_model.tflite")
+asl_model_path = os.path.abspath("F:/Django/Client/gesturesignlan/models/slr_model.tflite")
 
+# ✅ New gesture classifier model (18 gestures, trained on HaGRID)
+gesture_tflite_path = os.path.abspath("F:/Django/Client/gesturesignlan/videoapp/gesture_classifier.tflite")
+gesture_labels_path = os.path.abspath("F:/Django/Client/gesturesignlan/videoapp/gesture_labels.json")
 
-# ✅ Get absolute model path
-gesture_model_path = os.path.abspath("G:/Django Projects/Personal/signlan-1/signlan/videoapp/gesture_recognizer.task")
-
-# ✅ Debugging: Check if MediaPipe is getting the correct path
-print(f"🔹 Using Gesture Model Path: {gesture_model_path}")
-
-# ✅ Read the model file manually
+# ✅ Load gesture labels
+GESTURE_LABELS = {}
 try:
-    with open(gesture_model_path, "rb") as f:
-        gesture_model_data = f.read()  # ✅ Read file as bytes
-    print("✅ Gesture model file read successfully.")
+    with open(gesture_labels_path, "r") as f:
+        GESTURE_LABELS = json.load(f)
+    print(f"✅ Gesture labels loaded: {len(GESTURE_LABELS)} gestures")
+    print(f"   Gestures: {list(GESTURE_LABELS.values())}")
 except Exception as e:
-    print(f"❌ Error reading Gesture model file: {e}")
-    gesture_model_data = None
+    print(f"❌ Error loading gesture labels: {e}")
 
-
+# ✅ Load gesture TFLite model
+gesture_interpreter = None
+try:
+    gesture_interpreter = tf.lite.Interpreter(model_path=gesture_tflite_path)
+    gesture_interpreter.allocate_tensors()
+    print(f"✅ Gesture classifier loaded: {gesture_tflite_path}")
+except Exception as e:
+    print(f"❌ Error loading gesture classifier: {e}")
 
 # ✅ Ensure ASL model exists
 if not os.path.exists(asl_model_path):
     print(f"❌ Error: ASL model file NOT found at {asl_model_path}")
 else:
     print(f"✅ ASL model file found at: {asl_model_path}")
-
-# ✅ Ensure Gesture model exists
-if not os.path.exists(gesture_model_path):
-    print(f"❌ Error: Gesture model file NOT found at {gesture_model_path}")
-else:
-    print(f"✅ Gesture model file found at: {gesture_model_path}")
 
 # ASL Label Mapping
 ASL_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O",
@@ -131,36 +130,38 @@ class VideoProcessorConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"❌ ASL WebSocket receive error: {e}")
 
-# ✅ Gesture Recognition WebSocket Consumer
+# ✅ Gesture Recognition WebSocket Consumer (18 HaGRID Gestures)
 class GestureRecognitionConsumer(AsyncWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.history = deque(maxlen=7)  # Track last 7 frames for smoothing
+
     async def connect(self):
         """Handles WebSocket connection"""
         await self.accept()
         print("✅ Gesture WebSocket Connected.")
 
-        # ✅ Ensure the model was read correctly
-        if gesture_model_data is None:
-            print(f"❌ Error: Gesture model file could not be read.")
-            self.recognizer = None
-            return
+        # Initialize MediaPipe Hands for landmark extraction
+        self.hands_detector = mp_hands.Hands(
+            static_image_mode=False,
+            max_num_hands=1,
+            min_detection_confidence=0.6,
+            min_tracking_confidence=0.6
+        )
 
-        try:
-            print(f"🔹 Loading GestureRecognizer from memory...")
-
-            # ✅ Load the model from bytes
-            base_options = mp.tasks.BaseOptions(model_asset_buffer=gesture_model_data)
-            options = mp.tasks.vision.GestureRecognizerOptions(
-                base_options=base_options,
-                running_mode=mp.tasks.vision.RunningMode.IMAGE
-            )
-            self.recognizer = mp.tasks.vision.GestureRecognizer.create_from_options(options)
-            print("✅ GestureRecognizer model loaded successfully.")
-
-        except Exception as e:
-            print(f"❌ Error initializing GestureRecognizer: {e}")
-            self.recognizer = None  # Prevent crashes
+        # Use the global gesture TFLite interpreter
+        if gesture_interpreter is None:
+            print("❌ Error: Gesture classifier not loaded.")
+            self.classifier_ready = False
+        else:
+            self.classifier_ready = True
+            self.input_details = gesture_interpreter.get_input_details()
+            self.output_details = gesture_interpreter.get_output_details()
+            print(f"✅ Gesture classifier ready ({len(GESTURE_LABELS)} gestures)")
 
     async def disconnect(self, close_code):
+        if hasattr(self, 'hands_detector'):
+            self.hands_detector.close()
         print("⚠️ Gesture WebSocket Disconnected.")
 
     async def receive(self, text_data):
@@ -180,23 +181,77 @@ class GestureRecognitionConsumer(AsyncWebsocketConsumer):
                 print("❌ Error: Decoded frame is None.")
                 return
 
-            print(f"✅ Received frame of shape: {frame.shape}")
-
-            # ✅ Ensure recognizer is initialized
-            if not self.recognizer:
-                print("❌ Error: GestureRecognizer is not initialized. Skipping processing.")
+            # Ensure classifier is ready
+            if not self.classifier_ready:
+                print("❌ Error: Gesture classifier not ready.")
                 return
 
+            # Convert to RGB for MediaPipe
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+            results = self.hands_detector.process(frame_rgb)
 
-            result = self.recognizer.recognize(mp_image)
             gesture_result = "None"
-            if result.gestures:
-                gesture_result = result.gestures[0][0].category_name
-                print(f"✅ Detected Gesture: {gesture_result}")
+            confidence = 0.0
 
-            await self.send(text_data=json.dumps({"gesture": gesture_result}))
+            if results.multi_hand_landmarks:
+                landmarks = results.multi_hand_landmarks[0]
+
+                # Extract 21 landmarks (x, y) = 42 features
+                landmark_list = np.array(
+                    [[lm.x, lm.y] for lm in landmarks.landmark],
+                    dtype=np.float32
+                )
+
+                # Normalize relative to wrist + scale
+                wrist = landmark_list[0]
+                landmark_list = landmark_list - wrist
+                max_val = np.max(np.abs(landmark_list)) or 1
+                landmark_list = landmark_list / max_val
+                processed = landmark_list.flatten()
+
+                # Run TFLite inference
+                input_data = np.array([processed], dtype=np.float32)
+                gesture_interpreter.set_tensor(
+                    self.input_details[0]['index'], input_data
+                )
+                gesture_interpreter.invoke()
+                output_data = gesture_interpreter.get_tensor(
+                    self.output_details[0]['index']
+                )
+
+                # Get prediction
+                confidence = float(np.max(output_data))
+                predicted_idx = int(np.argmax(output_data))
+
+                if confidence > 0.6:
+                    raw_gesture = GESTURE_LABELS.get(
+                        str(predicted_idx), f"gesture_{predicted_idx}"
+                    )
+                    self.history.append(raw_gesture)
+                else:
+                    self.history.append("None")
+                    
+            else:
+                self.history.append("None")
+
+            # Temporal smoothing: get most common gesture in last 7 frames
+            if len(self.history) > 0:
+                from collections import Counter
+                counts = Counter(self.history)
+                best_gesture, best_count = counts.most_common(1)[0]
+                # Require at least 3 occurrences out of 7 to switch
+                if best_gesture != "None" and best_count >= 3:
+                    gesture_result = best_gesture
+                else:
+                    gesture_result = "None"
+            else:
+                gesture_result = "None"
+
+            await self.send(text_data=json.dumps({
+                "gesture": gesture_result,
+                "confidence": round(confidence, 2)
+            }))
 
         except Exception as e:
             print(f"❌ Gesture WebSocket error: {e}")
+

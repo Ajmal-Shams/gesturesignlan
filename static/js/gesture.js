@@ -2,6 +2,7 @@ const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const gestureDisplay = document.getElementById("gesture");
+const confidenceDisplay = document.getElementById("confidence");
 
 // Open WebSocket connection
 const socket = new WebSocket("ws://localhost:8000/ws/gesture/");
@@ -15,6 +16,7 @@ socket.onmessage = function (event) {
     try {
         const data = JSON.parse(event.data);
         let detectedGesture = data.gesture || "none";
+        let confidence = data.confidence || 0.0;
 
         // Remove underscores and format text
         detectedGesture = detectedGesture.replace(/_/g, " ").trim();
@@ -33,24 +35,32 @@ socket.onmessage = function (event) {
             noHandTimeout = setTimeout(() => {
                 if (Date.now() - lastGestureTime >= 1000) {
                     detectedGesture = "No hand detected";
-                    updateUIandSpeak(detectedGesture);
+                    updateUIandSpeak(detectedGesture, 0);
                 }
             }, 1000); // 1-second delay before announcing "No hand detected"
             return;
         }
 
-        updateUIandSpeak(detectedGesture);
+        updateUIandSpeak(detectedGesture, confidence);
     } catch (error) {
         console.error("Error processing WebSocket message:", error);
     }
 };
 
 // Function to update UI and speak
-function updateUIandSpeak(detectedGesture) {
+function updateUIandSpeak(detectedGesture, confidence) {
+    // Update UI elements
+    gestureDisplay.textContent = detectedGesture;
+    
+    if (confidence > 0 && detectedGesture !== "No hand detected") {
+        confidenceDisplay.textContent = `(${(confidence * 100).toFixed(0)}%)`;
+    } else {
+        confidenceDisplay.textContent = "";
+    }
+
     // Prevent repeating the same gesture
     if (detectedGesture !== lastSpokenGesture && !isSpeaking) {
         lastSpokenGesture = detectedGesture;
-        gestureDisplay.textContent = detectedGesture; // Update UI
         speakText(detectedGesture);
     }
 }

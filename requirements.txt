@@ -54,7 +54,7 @@ mdurl==0.1.2
 mediapipe==0.10.21
 ml-dtypes==0.4.1
 namex==0.0.8
-numpy==2.2.4
+numpy==1.26.4
 oauthlib==3.2.2
 opencv-contrib-python==4.11.0.86
 opencv-python==4.11.0.86
